@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Link } from 'react-router-dom';
-import { removeFromCart, updateQuantity } from '../redux/slices/cartSlice';
+import { Link, useNavigate } from 'react-router-dom';
+import { removeFromCart, updateQuantity, clearCart } from '../redux/slices/cartSlice';
 import Footer from '../components/Footer'; 
 
 const Cart = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { items, totalAmount } = useSelector((state) => state.cart);
   const [promoCode, setPromoCode] = useState('');
   const [discountApplied, setDiscountApplied] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
   const discountRate = 0.20; // 20% discount
   const deliveryFee = 15;
 
@@ -26,6 +28,75 @@ const Cart = () => {
       setDiscountApplied(true);
     } else {
       alert('Invalid promo code. Try "SAVE20"');
+    }
+  };
+
+  // Checkout function
+  const handleCheckout = async () => {
+    // Get user from localStorage
+    const user = JSON.parse(localStorage.getItem('user'));
+    
+    if (!user) {
+      alert('Please login first');
+      navigate('/login');
+      return;
+    }
+    
+    if (items.length === 0) {
+      alert('Your cart is empty');
+      return;
+    }
+    
+    setIsProcessing(true);
+    
+    // Prepare order data from cart items
+    const orderData = {
+      fullName: user.name || 'Customer',
+      email: user.email,
+      phone: '1234567890',
+      address: 'Customer Address',
+      city: 'City',
+      state: 'State',
+      zipCode: '12345',
+      paymentMethod: 'cod',
+      shippingAddress: 'Customer Address, City, State 12345',
+      items: items.map(item => ({
+        productId: item.id,
+        quantity: item.quantity,
+        price: item.price,
+        size: item.selectedSize || item.size || 'Medium',
+        color: item.selectedColor || item.color || 'Black'
+      }))
+    };
+    
+    try {
+      const response = await fetch('http://localhost:5000/api/orders', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${user.token}`
+        },
+        body: JSON.stringify(orderData)
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok && data.success) {
+        alert(`✅ Order placed successfully!\n\n🔍 Tracking ID: ${data.trackingId}\n💰 Total: $${(totalAmount - discountAmount + deliveryFee).toFixed(2)}`);
+        
+        // Clear cart after successful order
+        dispatch(clearCart());
+        
+        // Redirect to orders page
+        navigate('/orders');
+      } else {
+        alert(data.message || 'Order failed. Please try again.');
+      }
+    } catch (error) {
+      console.error('Checkout error:', error);
+      alert('Failed to place order. Make sure backend is running on port 5000');
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -76,8 +147,8 @@ const Cart = () => {
                   <div className="item-details">
                     <h3>{item.title}</h3>
                     <div className="item-attributes">
-                      <span>Size: {item.size || 'Large'}</span>
-                      <span>Color: {item.color || 'White'}</span>
+                      <span>Size: {item.selectedSize || item.size || 'Large'}</span>
+                      <span>Color: {item.selectedColor || item.color || 'White'}</span>
                     </div>
                     <div className="item-price">${item.price}</div>
                     <div className="item-actions">
@@ -137,14 +208,19 @@ const Cart = () => {
                 )}
               </div>
 
-              <button className="checkout-btn">Proceed to Checkout</button>
+              <button 
+                className="checkout-btn" 
+                onClick={handleCheckout}
+                disabled={isProcessing}
+              >
+                {isProcessing ? 'Processing...' : 'Proceed to Checkout'}
+              </button>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Imported Footer Component */}
-     
+      <Footer />
 
       <style jsx>{`
         .cart-page {
@@ -419,9 +495,14 @@ const Cart = () => {
           transition: all 0.2s;
         }
 
-        .checkout-btn:hover {
+        .checkout-btn:hover:not(:disabled) {
           background: #000;
           transform: translateY(-1px);
+        }
+
+        .checkout-btn:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
         }
 
         /* Empty Cart */

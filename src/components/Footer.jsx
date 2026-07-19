@@ -1,4 +1,13 @@
 import React from 'react';
+import { FaTwitter } from "react-icons/fa";
+import { FaFacebookSquare } from "react-icons/fa";
+import { FaInstagramSquare } from "react-icons/fa";
+import { FaHeadphones } from "react-icons/fa6";
+import { FaCcVisa } from "react-icons/fa";
+import { FaCcPaypal } from "react-icons/fa";
+import { FaCcApplePay } from "react-icons/fa6";
+import { FaGooglePay } from "react-icons/fa";
+import { BiLogoMastercard } from "react-icons/bi";
 
 const Footer = () => {
   return (
@@ -19,11 +28,16 @@ const Footer = () => {
             <h3>SHOP.CO</h3>
             <p>Find clothes that matches your style with our wide range of clothing, accessories, and shoes.</p>
             <div className="social-links">
-              <a href="#">📘</a>
-              <a href="#">📸</a>
-              <a href="#">🐦</a>
+              <a href="#"><FaFacebookSquare />
+</a>
+              <a href="#"><FaInstagramSquare />
+</a>
+              <a href="#"><FaTwitter /></a>
+               <a href="#"><FaHeadphones />   
+</a>
             </div>
           </div>
+
 
           <div className="footer-section">
             <h4>SHOP</h4>
@@ -60,9 +74,16 @@ const Footer = () => {
         <div className="footer-bottom">
           <p>© 2024 SHOP.CO. All rights reserved.</p>
           <div className="payment-methods">
-            <span>VISA</span>
-            <span>Mastercard</span>
-            <span>PayPal</span>
+            <span><FaCcVisa />
+</span>
+            <span><FaCcApplePay />
+</span>
+            <span><FaCcPaypal />
+</span>
+<span><FaGooglePay />
+</span>
+<span><BiLogoMastercard />
+</span>
           </div>
         </div>
       </div>
@@ -133,10 +154,17 @@ const Footer = () => {
           padding: 20px 0;
           border-top: 1px solid #ddd;
         }
-        .payment-methods {
-          display: flex;
-          gap: 20px;
-        }
+      .payment-methods {
+  display: flex;
+  gap: 20px; /* Space between icons */
+  align-items: center;
+}
+
+.payment-methods svg {
+  width: 30px;
+  height: 30px;
+  cursor: pointer; /* Optional */
+}
         @media (max-width: 768px) {
           .footer-content {
             grid-template-columns: 1fr;

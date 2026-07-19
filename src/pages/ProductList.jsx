@@ -1,12 +1,107 @@
+// import React, { useEffect, useState } from 'react';
+// import { useDispatch, useSelector } from 'react-redux';
+// import ProductCard from '../components/ProductCard';
+// import Loader from '../components/Loader';
+// import { fetchProducts } from '../redux/slices/productSlice';
+
+// const ProductList = () => {
+//   const dispatch = useDispatch();
+//   const { products, loading } = useSelector((state) => state.products);
+//   const [filteredProducts, setFilteredProducts] = useState([]);
+//   const [category, setCategory] = useState('all');
+//   const [sortBy, setSortBy] = useState('default');
+
+//   useEffect(() => {
+//     if (products.length === 0) {
+//       dispatch(fetchProducts());
+//     }
+//   }, [dispatch, products.length]);
+
+//   useEffect(() => {
+//     let filtered = [...products];
+    
+//     if (category !== 'all') {
+//       filtered = filtered.filter(p => p.category === category);
+//     }
+    
+//     if (sortBy === 'price-asc') {
+//       filtered.sort((a, b) => a.price - b.price);
+//     } else if (sortBy === 'price-desc') {
+//       filtered.sort((a, b) => b.price - a.price);
+//     }
+    
+//     setFilteredProducts(filtered);
+//   }, [products, category, sortBy]);
+
+//   if (loading) return <Loader />;
+
+//   return (
+//     <div className="product-list">
+//       <div className="container">
+//         <div className="filters">
+//           <select value={category} onChange={(e) => setCategory(e.target.value)}>
+//             <option value="all">All Categories</option>
+//             <option value="men's clothing">Men's Clothing</option>
+//             <option value="women's clothing">Women's Clothing</option>
+//             <option value="jewelery">Jewelery</option>
+//             <option value="electronics">Electronics</option>
+//           </select>
+          
+//           <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+//             <option value="default">Default</option>
+//             <option value="price-asc">Price: Low to High</option>
+//             <option value="price-desc">Price: High to Low</option>
+//           </select>
+//         </div>
+        
+//         <div className="grid-4">
+//           {filteredProducts.map(product => (
+//             <ProductCard key={product.id} product={product} />
+//           ))}
+//         </div>
+//       </div>
+      
+//       <style jsx>{`
+//         .product-list {
+//           padding: 40px 0;
+//         }
+//         .filters {
+//           display: flex;
+//           justify-content: space-between;
+//           margin-bottom: 40px;
+//         }
+//         .filters select {
+//           padding: 10px 20px;
+//           border: 1px solid #ddd;
+//           border-radius: 8px;
+//           font-size: 16px;
+//         }
+//       `}</style>
+//     </div>
+//   );
+// };
+
+// export default ProductList;
+
+
+
+
+
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useLocation } from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
 import Loader from '../components/Loader';
 import { fetchProducts } from '../redux/slices/productSlice';
 
 const ProductList = () => {
   const dispatch = useDispatch();
-  const { products, loading } = useSelector((state) => state.products);
+  const location = useLocation();
+
+  const { products, loading } = useSelector(
+    (state) => state.products
+  );
+
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [category, setCategory] = useState('all');
   const [sortBy, setSortBy] = useState('default');
@@ -18,63 +113,170 @@ const ProductList = () => {
   }, [dispatch, products.length]);
 
   useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const filter = params.get('filter');
+
     let filtered = [...products];
-    
+
+    // New Arrivals
+    if (filter === 'new') {
+      filtered = filtered.filter(
+        (product) => product.isNewArrival === true
+      );
+    }
+
+    // On Sale
+    if (filter === 'onsale') {
+      filtered = filtered.filter(
+        (product) => product.isOnSale === true
+      );
+    }
+
+    // Category Filter
     if (category !== 'all') {
-      filtered = filtered.filter(p => p.category === category);
+      filtered = filtered.filter(
+        (product) => product.category === category
+      );
     }
-    
+
+    // Sorting
     if (sortBy === 'price-asc') {
-      filtered.sort((a, b) => a.price - b.price);
-    } else if (sortBy === 'price-desc') {
-      filtered.sort((a, b) => b.price - a.price);
+      filtered.sort((a, b) => Number(a.price) - Number(b.price));
     }
-    
+
+    if (sortBy === 'price-desc') {
+      filtered.sort((a, b) => Number(b.price) - Number(a.price));
+    }
+
     setFilteredProducts(filtered);
-  }, [products, category, sortBy]);
+  }, [products, category, sortBy, location.search]);
 
   if (loading) return <Loader />;
 
   return (
     <div className="product-list">
       <div className="container">
+
+        <div className="page-header">
+          <h2>
+            {new URLSearchParams(location.search).get('filter') === 'new'
+              ? 'New Arrivals'
+              : new URLSearchParams(location.search).get('filter') === 'onsale'
+              ? 'On Sale Products'
+              : 'All Products'}
+          </h2>
+        </div>
+
         <div className="filters">
-          <select value={category} onChange={(e) => setCategory(e.target.value)}>
+          <select
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+          >
             <option value="all">All Categories</option>
-            <option value="men's clothing">Men's Clothing</option>
-            <option value="women's clothing">Women's Clothing</option>
-            <option value="jewelery">Jewelery</option>
-            <option value="electronics">Electronics</option>
+            <option value="men's clothing">
+              Men's Clothing
+            </option>
+            <option value="women's clothing">
+              Women's Clothing
+            </option>
+            <option value="jewelery">
+              Jewelery
+            </option>
+            <option value="electronics">
+              Electronics
+            </option>
           </select>
-          
-          <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+          >
             <option value="default">Default</option>
-            <option value="price-asc">Price: Low to High</option>
-            <option value="price-desc">Price: High to Low</option>
+            <option value="price-asc">
+              Price: Low to High
+            </option>
+            <option value="price-desc">
+              Price: High to Low
+            </option>
           </select>
         </div>
-        
-        <div className="grid-4">
-          {filteredProducts.map(product => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
+
+        {filteredProducts.length === 0 ? (
+          <div className="empty-products">
+            <h3>No products found</h3>
+            <p>
+              No products available for this filter.
+            </p>
+          </div>
+        ) : (
+          <div className="grid-4">
+            {filteredProducts.map((product) => (
+              <ProductCard
+                key={product.id}
+                product={product}
+              />
+            ))}
+          </div>
+        )}
       </div>
-      
+
       <style jsx>{`
         .product-list {
           padding: 40px 0;
         }
+
+        .page-header {
+          margin-bottom: 30px;
+        }
+
+        .page-header h2 {
+          font-size: 32px;
+          font-weight: 700;
+        }
+
         .filters {
           display: flex;
           justify-content: space-between;
+          align-items: center;
           margin-bottom: 40px;
+          gap: 20px;
         }
+
         .filters select {
           padding: 10px 20px;
           border: 1px solid #ddd;
           border-radius: 8px;
           font-size: 16px;
+          background: white;
+          cursor: pointer;
+        }
+
+        .empty-products {
+          text-align: center;
+          padding: 80px 20px;
+        }
+
+        .empty-products h3 {
+          margin-bottom: 10px;
+          font-size: 24px;
+        }
+
+        .empty-products p {
+          color: #666;
+        }
+
+        @media (max-width: 768px) {
+          .filters {
+            flex-direction: column;
+          }
+
+          .filters select {
+            width: 100%;
+          }
+
+          .page-header h2 {
+            font-size: 24px;
+          }
         }
       `}</style>
     </div>
