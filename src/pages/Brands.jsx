@@ -189,7 +189,7 @@ const Brands = () => {
               {/* ✅ Show product count */}
               <div className="brand-product-count">
                 <span className="product-count-badge">
-                  📦 {productCounts[brand.id] || brand.productCount || 0} products
+                   {productCounts[brand.id] || brand.productCount || 0} products
                 </span>
               </div>
             </Link>

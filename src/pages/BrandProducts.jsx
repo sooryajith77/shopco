@@ -434,7 +434,7 @@ const BrandProducts = () => {
             )}
             <div className="brand-stats">
               <span className="product-count">
-                📦 {brand.productCount || products.length} Products
+                 {brand.productCount || products.length} Products
               </span>
               {brand.isActive !== false && (
                 <span className="brand-status active">● Active</span>
