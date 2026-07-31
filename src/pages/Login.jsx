@@ -156,11 +156,100 @@
 
 
 
+// import React, { useState } from 'react';
+// import { useDispatch } from 'react-redux';
+// import { useNavigate, Link } from 'react-router-dom';
+// import { loginStart, loginSuccess, loginFailure } from '../redux/slices/authSlice';
+// import { authAPI } from '../services/api';
+// import './Login.css'
+// const Login = () => {
+//   const [email, setEmail] = useState('');
+//   const [password, setPassword] = useState('');
+//   const [loading, setLoading] = useState(false);
+//   const dispatch = useDispatch();
+//   const navigate = useNavigate();
+
+//   const handleSubmit = async (e) => {
+//     e.preventDefault();
+//     setLoading(true);
+    
+//     try {
+//       dispatch(loginStart());
+//       const response = await authAPI.login(email, password);
+      
+//       // The response should contain user data with token
+//       dispatch(loginSuccess(response));
+      
+//       // Redirect based on role
+//       if (response.role === 'admin') {
+//         navigate('/admin');
+//       } else {
+//         navigate('/');
+//       }
+//     } catch (error) {
+//       dispatch(loginFailure(error.message));
+//       (toast.sucess 'Login failed. Please check your credentials.');
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   return (
+//     <div className="auth-page">
+//       <div className="auth-container">
+//         <h2>Login to Your Account</h2>
+//         <form onSubmit={handleSubmit}>
+//           <div className="form-group">
+//             <input
+//               type="email"
+//               placeholder="Email Address"
+//               value={email}
+//               onChange={(e) => setEmail(e.target.value)}
+//               required
+//             />
+//           </div>
+//           <div className="form-group">
+//             <input
+//               type="password"
+//               placeholder="Password"
+//               value={password}
+//               onChange={(e) => setPassword(e.target.value)}
+//               required
+//             />
+//           </div>
+//           <button type="submit" className="btn-primary" disabled={loading}>
+//             {loading ? 'Logging in...' : 'Login'}
+//           </button>
+//         </form>
+        
+//         <div className="demo-credentials">
+//           <p>Demo Credentials:</p>
+//           <p><strong>Admin:</strong> admin@shop.co / admin123</p>
+//           <p><strong>User:</strong> user@example.com / user123</p>
+//         </div>
+        
+//         <p>
+//           Don't have an account? <Link to="/register">Register here</Link>
+//         </p>
+//       </div>
+      
+     
+//     </div>
+//   );
+// };
+
+// export default Login;
+
+
+
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate, Link } from 'react-router-dom';
 import { loginStart, loginSuccess, loginFailure } from '../redux/slices/authSlice';
 import { authAPI } from '../services/api';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import './Login.css'
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -173,22 +262,46 @@ const Login = () => {
     e.preventDefault();
     setLoading(true);
     
+    // Show loading toast
+    const toastId = toast.loading('Logging in...');
+    
     try {
       dispatch(loginStart());
       const response = await authAPI.login(email, password);
+      
+      // Update loading toast to success
+      toast.update(toastId, {
+        render: ' Login successful! Welcome back.',
+        type: 'success',
+        isLoading: false,
+        autoClose: 3000,
+      });
       
       // The response should contain user data with token
       dispatch(loginSuccess(response));
       
       // Redirect based on role
-      if (response.role === 'admin') {
-        navigate('/admin');
-      } else {
-        navigate('/');
-      }
+      setTimeout(() => {
+        if (response.role === 'admin') {
+          navigate('/admin');
+        } else {
+          navigate('/');
+        }
+      }, 500);
+      
     } catch (error) {
+      // ✅ CORRECTED: Use toast.error() with proper syntax
+      toast.update(toastId, {
+        render: ` Login failed: ${error.message || 'Please check your credentials.'}`,
+        type: 'error',
+        isLoading: false,
+        autoClose: 4000,
+      });
+      
+      // Or simply use:
+      // toast.error('Login failed. Please check your credentials.');
+      
       dispatch(loginFailure(error.message));
-      alert(error.message || 'Login failed. Please check your credentials.');
     } finally {
       setLoading(false);
     }
@@ -196,6 +309,20 @@ const Login = () => {
 
   return (
     <div className="auth-page">
+      {/* ✅ Add ToastContainer */}
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
+      
       <div className="auth-container">
         <h2>Login to Your Account</h2>
         <form onSubmit={handleSubmit}>
@@ -232,78 +359,6 @@ const Login = () => {
           Don't have an account? <Link to="/register">Register here</Link>
         </p>
       </div>
-      
-      <style jsx>{`
-        .auth-page {
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          min-height: 80vh;
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-          padding: 20px;
-        }
-        .auth-container {
-          background: white;
-          padding: 40px;
-          border-radius: 12px;
-          box-shadow: 0 10px 40px rgba(0,0,0,0.1);
-          width: 100%;
-          max-width: 450px;
-        }
-        .auth-container h2 {
-          margin-bottom: 30px;
-          text-align: center;
-          color: #333;
-        }
-        .form-group {
-          margin-bottom: 20px;
-        }
-        .auth-container input {
-          width: 100%;
-          padding: 14px;
-          border: 1px solid #ddd;
-          border-radius: 8px;
-          font-size: 16px;
-          transition: border-color 0.3s;
-        }
-        .auth-container input:focus {
-          outline: none;
-          border-color: #667eea;
-        }
-        .auth-container button {
-          width: 100%;
-          padding: 14px;
-          font-size: 16px;
-          font-weight: 600;
-          margin-top: 10px;
-        }
-        .demo-credentials {
-          margin: 20px 0;
-          padding: 15px;
-          background: #f8f9fa;
-          border-radius: 8px;
-          font-size: 13px;
-        }
-        .demo-credentials p {
-          margin: 5px 0;
-        }
-        .auth-container p {
-          margin-top: 20px;
-          text-align: center;
-        }
-        .auth-container a {
-          color: #667eea;
-          text-decoration: none;
-        }
-        .auth-container a:hover {
-          text-decoration: underline;
-        }
-        @media (max-width: 768px) {
-          .auth-container {
-            padding: 30px 20px;
-          }
-        }
-      `}</style>
     </div>
   );
 };

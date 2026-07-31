@@ -1,72 +1,435 @@
-import React, { useState } from 'react';
+// import React, { useState } from 'react';
+// import { useDispatch, useSelector } from 'react-redux';
+// import { Link, useNavigate } from 'react-router-dom';
+// import { removeFromCart, updateQuantity, clearCart } from '../redux/slices/cartSlice';
+// import Footer from '../components/Footer'; 
+// import './Cart.css'
+// const Cart = () => {
+//   const dispatch = useDispatch();
+//   const navigate = useNavigate();
+//   const { items, totalAmount } = useSelector((state) => state.cart);
+//   const [promoCode, setPromoCode] = useState('');
+//   const [discountApplied, setDiscountApplied] = useState(false);
+//   const [isProcessing, setIsProcessing] = useState(false);
+//   const discountRate = 0.20; // 20% discount
+//   const deliveryFee = 15;
+
+//   const handleQuantityChange = (id, quantity) => {
+//     if (quantity < 1) return;
+//     dispatch(updateQuantity({ id, quantity }));
+//   };
+
+//   const handleRemove = (id) => {
+//     dispatch(removeFromCart(id));
+//   };
+
+//   const handleApplyPromo = () => {
+//     if (promoCode.trim().toLowerCase() === 'save20') {
+//       setDiscountApplied(true);
+//     } else {
+//       alert('Invalid promo code. Try "SAVE20"');
+//     }
+//   };
+
+//   // Checkout function
+//   const handleCheckout = async () => {
+//     // Get user from localStorage
+//     const user = JSON.parse(localStorage.getItem('user'));
+    
+//     if (!user) {
+//       alert('Please login first');
+//       navigate('/login');
+//       return;
+//     }
+    
+//     if (items.length === 0) {
+//       alert('Your cart is empty');
+//       return;
+//     }
+    
+//     setIsProcessing(true);
+    
+//     // Prepare order data from cart items
+//     const orderData = {
+//       fullName: user.name || 'Customer',
+//       email: user.email,
+//       phone: '1234567890',
+//       address: 'Customer Address',
+//       city: 'City',
+//       state: 'State',
+//       zipCode: '12345',
+//       paymentMethod: 'cod',
+//       shippingAddress: 'Customer Address, City, State 12345',
+//       items: items.map(item => ({
+//         productId: item.id,
+//         quantity: item.quantity,
+//         price: item.price,
+//         size: item.selectedSize || item.size || 'Medium',
+//         color: item.selectedColor || item.color || 'Black'
+//       }))
+//     };
+    
+//     try {
+//       const response = await fetch('http://localhost:5000/api/orders', {
+//         method: 'POST',
+//         headers: {
+//           'Content-Type': 'application/json',
+//           'Authorization': `Bearer ${user.token}`
+//         },
+//         body: JSON.stringify(orderData)
+//       });
+      
+//       const data = await response.json();
+      
+//       if (response.ok && data.success) {
+//         alert(`✅ Order placed successfully!\n\n🔍 Tracking ID: ${data.trackingId}\n💰 Total: $${(totalAmount - discountAmount + deliveryFee).toFixed(2)}`);
+        
+//         // Clear cart after successful order
+//         dispatch(clearCart());
+        
+//         // Redirect to orders page
+//         navigate('/orders');
+//       } else {
+//         alert(data.message || 'Order failed. Please try again.');
+//       }
+//     } catch (error) {
+//       console.error('Checkout error:', error);
+//       alert('Failed to place order. Make sure backend is running on port 5000');
+//     } finally {
+//       setIsProcessing(false);
+//     }
+//   };
+
+//   // Calculate totals with discount
+//   const subtotal = totalAmount;
+//   const discountAmount = discountApplied ? subtotal * discountRate : 0;
+//   const total = subtotal - discountAmount + deliveryFee;
+
+//   if (items.length === 0) {
+//     return (
+//       <>
+//         <div className="cart-page">
+//           <div className="container">
+//             <div className="breadcrumb">
+//               <Link to="/">Home</Link> <span>/</span> <span><strong>Cart</strong></span>
+//             </div>
+//             <div className="empty-cart">
+//               <h2>Your cart is empty</h2>
+//               <p>Add some style to your bag ✨</p>
+//               <Link to="/products" className="btn-primary">Continue Shopping</Link>
+//             </div>
+//           </div>
+//         </div>
+//         <Footer />
+//       </>
+//     );
+//   }
+
+//   return (
+//     <>
+//       <div className="cart-page">
+//         <div className="container">
+//           {/* Breadcrumb */}
+//           <div className="breadcrumb">
+//             <Link to="/">Home</Link> <span>/</span> <span><strong>Cart</strong></span>
+//           </div>
+
+//           <h1>YOUR CART</h1>
+
+//           <div className="cart-content">
+//             {/* Cart Items Section */}
+//             <div className="cart-items">
+//               {items.map(item => (
+//                 <div key={item.id} className="cart-item">
+//                   <div className="item-image">
+//                     <img src={item.image} alt={item.title} />
+//                   </div>
+//                   <div className="item-details">
+//                     <h3>{item.title}</h3>
+//                     <div className="item-attributes">
+//                       <span>Size: {item.selectedSize || item.size || 'Large'}</span>
+//                       <span>Color: {item.selectedColor || item.color || 'White'}</span>
+//                     </div>
+//                     <div className="item-price">${item.price}</div>
+//                     <div className="item-actions">
+//                       <div className="quantity-controls">
+//                         <button onClick={() => handleQuantityChange(item.id, item.quantity - 1)}>-</button>
+//                         <span>{item.quantity}</span>
+//                         <button onClick={() => handleQuantityChange(item.id, item.quantity + 1)}>+</button>
+//                       </div>
+//                       <button className="remove-btn" onClick={() => handleRemove(item.id)}>Remove</button>
+//                     </div>
+//                   </div>
+//                   <div className="item-total">
+//                     <strong>${(item.price * item.quantity).toFixed(2)}</strong>
+//                   </div>
+//                 </div>
+//               ))}
+//             </div>
+
+//             {/* Order Summary Section */}
+//             <div className="cart-summary">
+//               <h3>Order Summary</h3>
+//               <div className="summary-row">
+//                 <span>Subtotal</span>
+//                 <span>${subtotal.toFixed(2)}</span>
+//               </div>
+//               {discountApplied && (
+//                 <div className="summary-row discount">
+//                   <span>Discount (-20%)</span>
+//                   <span className="discount-amount">-${discountAmount.toFixed(2)}</span>
+//                 </div>
+//               )}
+//               <div className="summary-row">
+//                 <span>Delivery Fee</span>
+//                 <span>${deliveryFee.toFixed(2)}</span>
+//               </div>
+//               <div className="summary-row total">
+//                 <span>Total</span>
+//                 <span>${total.toFixed(2)}</span>
+//               </div>
+
+//               {/* Promo Code Input */}
+//               <div className="promo-section">
+//                 <div className="promo-input-group">
+//                   <input
+//                     type="text"
+//                     placeholder="Add promo code"
+//                     value={promoCode}
+//                     onChange={(e) => setPromoCode(e.target.value)}
+//                     className="promo-input"
+//                   />
+//                   <button onClick={handleApplyPromo} className="apply-btn">Apply</button>
+//                 </div>
+//                 {discountApplied && (
+//                   <div className="promo-success">
+//                     ✓ Promo code applied! 20% discount
+//                   </div>
+//                 )}
+//               </div>
+
+//               <button 
+//                 className="checkout-btn" 
+//                 onClick={handleCheckout}
+//                 disabled={isProcessing}
+//               >
+//                 {isProcessing ? 'Processing...' : 'Proceed to Checkout'}
+//               </button>
+//             </div>
+//           </div>
+//         </div>
+//       </div>
+
+//       <Footer />
+
+     
+//     </>
+//   );
+// };
+
+// export default Cart;
+
+
+
+
+// Cart.jsx
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { Link, useNavigate } from 'react-router-dom';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import { removeFromCart, updateQuantity, clearCart } from '../redux/slices/cartSlice';
-import Footer from '../components/Footer'; 
+import './Cart.css';
 
 const Cart = () => {
-  const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { items, totalAmount } = useSelector((state) => state.cart);
-  const [promoCode, setPromoCode] = useState('');
-  const [discountApplied, setDiscountApplied] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false);
-  const discountRate = 0.20; // 20% discount
-  const deliveryFee = 15;
+  const dispatch = useDispatch();
+  const cartItems = useSelector((state) => state.cart.items || []);
+  const [showOrderModal, setShowOrderModal] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [savedAddresses, setSavedAddresses] = useState([]);
+  const [selectedAddressId, setSelectedAddressId] = useState(null);
+  const [loadingAddresses, setLoadingAddresses] = useState(false);
+  
+  const [orderDetails, setOrderDetails] = useState({
+    fullName: '',
+    email: '',
+    address: '',
+    city: '',
+    state: '',
+    zipCode: '',
+    phone: '',
+    paymentMethod: 'cod'
+  });
 
-  const handleQuantityChange = (id, quantity) => {
-    if (quantity < 1) return;
-    dispatch(updateQuantity({ id, quantity }));
-  };
+  // Calculate totals
+  const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const shipping = subtotal > 100 ? 0 : 5.99;
+  const tax = subtotal * 0.08;
+  const total = subtotal + shipping + tax;
 
-  const handleRemove = (id) => {
-    dispatch(removeFromCart(id));
-  };
+  // Fetch saved addresses when modal opens
+  useEffect(() => {
+    if (showOrderModal) {
+      fetchSavedAddresses();
+    }
+  }, [showOrderModal]);
 
-  const handleApplyPromo = () => {
-    if (promoCode.trim().toLowerCase() === 'save20') {
-      setDiscountApplied(true);
-    } else {
-      alert('Invalid promo code. Try "SAVE20"');
+  const fetchSavedAddresses = async () => {
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (!user) {
+      toast.info('Please login to access saved addresses');
+      return;
+    }
+    
+    setLoadingAddresses(true);
+    try {
+      const response = await fetch('http://localhost:5000/api/addresses', {
+        headers: {
+          'Authorization': `Bearer ${user.token}`
+        }
+      });
+      const data = await response.json();
+      if (data.success) {
+        setSavedAddresses(data.addresses);
+        const defaultAddr = data.addresses.find(addr => addr.isDefault);
+        if (defaultAddr) {
+          setSelectedAddressId(defaultAddr.id);
+          populateOrderForm(defaultAddr);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to fetch addresses:', error);
+    } finally {
+      setLoadingAddresses(false);
     }
   };
 
-  // Checkout function
-  const handleCheckout = async () => {
-    // Get user from localStorage
+  const populateOrderForm = (address) => {
+    setOrderDetails({
+      fullName: address.fullName || '',
+      email: address.email || '',
+      address: address.address || '',
+      city: address.city || '',
+      state: address.state || '',
+      zipCode: address.zipCode || '',
+      phone: address.phone || '',
+      paymentMethod: orderDetails.paymentMethod || 'cod'
+    });
+  };
+
+  const handleAddressSelect = (addressId) => {
+    const address = savedAddresses.find(a => a.id === addressId);
+    if (address) {
+      setSelectedAddressId(addressId);
+      populateOrderForm(address);
+      toast.success('Address selected');
+    }
+  };
+
+  const handleOrderChange = (e) => {
+    setOrderDetails({
+      ...orderDetails,
+      [e.target.name]: e.target.value
+    });
+  };
+
+  const handleRemoveItem = (productId) => {
+    dispatch(removeFromCart(productId));
+    toast.info('Item removed from cart');
+  };
+
+  const handleUpdateQuantity = (productId, newQuantity) => {
+    if (newQuantity < 1) return;
+    dispatch(updateQuantity({ productId, quantity: newQuantity }));
+  };
+
+  const handleClearCart = () => {
+    if (window.confirm('Are you sure you want to clear your cart?')) {
+      dispatch(clearCart());
+      toast.info('Cart cleared');
+    }
+  };
+
+  const handleBuyNow = () => {
+    if (cartItems.length === 0) {
+      toast.warning('Your cart is empty');
+      return;
+    }
+    setShowOrderModal(true);
+  };
+
+  const saveAddressAfterOrder = async () => {
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (!user) return;
+    
+    // Check if address already exists
+    const addressExists = savedAddresses.some(addr => 
+      addr.address === orderDetails.address && 
+      addr.city === orderDetails.city &&
+      addr.zipCode === orderDetails.zipCode
+    );
+    
+    if (addressExists) return;
+    
+    try {
+      await fetch('http://localhost:5000/api/addresses', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${user.token}`
+        },
+        body: JSON.stringify({
+          fullName: orderDetails.fullName,
+          email: orderDetails.email,
+          phone: orderDetails.phone,
+          address: orderDetails.address,
+          city: orderDetails.city,
+          state: orderDetails.state,
+          zipCode: orderDetails.zipCode,
+          isDefault: savedAddresses.length === 0,
+          addressType: 'home'
+        })
+      });
+    } catch (error) {
+      console.error('Failed to save address:', error);
+    }
+  };
+
+  const handleOrderSubmit = async (e) => {
+    e.preventDefault();
+    
     const user = JSON.parse(localStorage.getItem('user'));
     
     if (!user) {
-      alert('Please login first');
+      toast.warning('Please login first');
       navigate('/login');
       return;
     }
     
-    if (items.length === 0) {
-      alert('Your cart is empty');
-      return;
-    }
+    setLoading(true);
+    const toastId = toast.loading('Placing your order...');
     
-    setIsProcessing(true);
-    
-    // Prepare order data from cart items
     const orderData = {
-      fullName: user.name || 'Customer',
-      email: user.email,
-      phone: '1234567890',
-      address: 'Customer Address',
-      city: 'City',
-      state: 'State',
-      zipCode: '12345',
-      paymentMethod: 'cod',
-      shippingAddress: 'Customer Address, City, State 12345',
-      items: items.map(item => ({
+      fullName: orderDetails.fullName,
+      email: orderDetails.email,
+      phone: orderDetails.phone,
+      address: orderDetails.address,
+      city: orderDetails.city,
+      state: orderDetails.state,
+      zipCode: orderDetails.zipCode,
+      paymentMethod: orderDetails.paymentMethod,
+      shippingAddress: `${orderDetails.address}, ${orderDetails.city}, ${orderDetails.state} ${orderDetails.zipCode}`,
+      items: cartItems.map(item => ({
         productId: item.id,
+        productName: item.title || item.name,
         quantity: item.quantity,
         price: item.price,
-        size: item.selectedSize || item.size || 'Medium',
-        color: item.selectedColor || item.color || 'Black'
-      }))
+        size: item.selectedSize || 'N/A',
+        color: item.selectedColor || 'N/A',
+        image: item.image
+      })),
+      totalAmount: total
     };
     
     try {
@@ -82,502 +445,353 @@ const Cart = () => {
       const data = await response.json();
       
       if (response.ok && data.success) {
-        alert(`✅ Order placed successfully!\n\n🔍 Tracking ID: ${data.trackingId}\n💰 Total: $${(totalAmount - discountAmount + deliveryFee).toFixed(2)}`);
+        toast.update(toastId, {
+          render: `✅ Order placed successfully!\n📦 Order ID: ${data.order?.orderId || data.order?.id}\n🔍 Tracking ID: ${data.trackingId}\n💰 Total: $${total.toFixed(2)}`,
+          type: 'success',
+          isLoading: false,
+          autoClose: 5000,
+        });
+        
+        // Save address if user wants to
+        await saveAddressAfterOrder();
         
         // Clear cart after successful order
         dispatch(clearCart());
+        setShowOrderModal(false);
         
-        // Redirect to orders page
-        navigate('/orders');
+        // Reset form
+        setOrderDetails({
+          fullName: '',
+          email: '',
+          address: '',
+          city: '',
+          state: '',
+          zipCode: '',
+          phone: '',
+          paymentMethod: 'cod'
+        });
+        
+        setTimeout(() => {
+          navigate('/orders');
+        }, 2000);
       } else {
-        alert(data.message || 'Order failed. Please try again.');
+        toast.update(toastId, {
+          render: `❌ ${data.message || 'Order failed. Please try again.'}`,
+          type: 'error',
+          isLoading: false,
+          autoClose: 3000,
+        });
       }
     } catch (error) {
-      console.error('Checkout error:', error);
-      alert('Failed to place order. Make sure backend is running on port 5000');
+      toast.update(toastId, {
+        render: '❌ Failed to place order. Please try again.',
+        type: 'error',
+        isLoading: false,
+        autoClose: 3000,
+      });
     } finally {
-      setIsProcessing(false);
+      setLoading(false);
     }
   };
 
-  // Calculate totals with discount
-  const subtotal = totalAmount;
-  const discountAmount = discountApplied ? subtotal * discountRate : 0;
-  const total = subtotal - discountAmount + deliveryFee;
-
-  if (items.length === 0) {
+  if (cartItems.length === 0) {
     return (
-      <>
-        <div className="cart-page">
-          <div className="container">
-            <div className="breadcrumb">
-              <Link to="/">Home</Link> <span>/</span> <span><strong>Cart</strong></span>
-            </div>
-            <div className="empty-cart">
-              <h2>Your cart is empty</h2>
-              <p>Add some style to your bag ✨</p>
-              <Link to="/products" className="btn-primary">Continue Shopping</Link>
-            </div>
-          </div>
+      <div className="cart-page">
+        <ToastContainer />
+        <div className="empty-cart">
+          <div className="empty-cart-icon">🛒</div>
+          <h2>Your cart is empty</h2>
+          <p>Looks like you haven't added any items to your cart yet.</p>
+          <button className="btn btn-primary" onClick={() => navigate('/shop')}>
+            Continue Shopping
+          </button>
         </div>
-        <Footer />
-      </>
+      </div>
     );
   }
 
   return (
-    <>
-      <div className="cart-page">
-        <div className="container">
-          {/* Breadcrumb */}
-          <div className="breadcrumb">
-            <Link to="/">Home</Link> <span>/</span> <span><strong>Cart</strong></span>
+    <div className="cart-page">
+    
+
+      <div className="cart-container">
+        <h1>Shopping Cart</h1>
+        
+        <div className="cart-layout">
+          {/* Cart Items */}
+          <div className="cart-items">
+            {cartItems.map((item) => (
+              <div key={item.id} className="cart-item">
+                <div className="cart-item-image">
+                  <img 
+                    src={item.image || 'https://via.placeholder.com/100'} 
+                    alt={item.title || item.name} 
+                  />
+                </div>
+                
+                <div className="cart-item-details">
+                  <h3>{item.title || item.name}</h3>
+                  <div className="cart-item-meta">
+                    {item.selectedSize && <span>Size: {item.selectedSize}</span>}
+                    {item.selectedColor && <span>Color: {item.selectedColor}</span>}
+                  </div>
+                  <div className="cart-item-price">
+                    ${(item.price * item.quantity).toFixed(2)}
+                  </div>
+                </div>
+                
+                <div className="cart-item-actions">
+                  <div className="quantity-control">
+                    <button 
+                      onClick={() => handleUpdateQuantity(item.id, item.quantity - 1)}
+                      className="qty-btn"
+                    >
+                      -
+                    </button>
+                    <span>{item.quantity}</span>
+                    <button 
+                      onClick={() => handleUpdateQuantity(item.id, item.quantity + 1)}
+                      className="qty-btn"
+                    >
+                      +
+                    </button>
+                  </div>
+                  <button 
+                    onClick={() => handleRemoveItem(item.id)}
+                    className="remove-btn"
+                  >
+                    Remove
+                  </button>
+                </div>
+              </div>
+            ))}
           </div>
 
-          <h1>YOUR CART</h1>
-
-          <div className="cart-content">
-            {/* Cart Items Section */}
-            <div className="cart-items">
-              {items.map(item => (
-                <div key={item.id} className="cart-item">
-                  <div className="item-image">
-                    <img src={item.image} alt={item.title} />
-                  </div>
-                  <div className="item-details">
-                    <h3>{item.title}</h3>
-                    <div className="item-attributes">
-                      <span>Size: {item.selectedSize || item.size || 'Large'}</span>
-                      <span>Color: {item.selectedColor || item.color || 'White'}</span>
-                    </div>
-                    <div className="item-price">${item.price}</div>
-                    <div className="item-actions">
-                      <div className="quantity-controls">
-                        <button onClick={() => handleQuantityChange(item.id, item.quantity - 1)}>-</button>
-                        <span>{item.quantity}</span>
-                        <button onClick={() => handleQuantityChange(item.id, item.quantity + 1)}>+</button>
-                      </div>
-                      <button className="remove-btn" onClick={() => handleRemove(item.id)}>Remove</button>
-                    </div>
-                  </div>
-                  <div className="item-total">
-                    <strong>${(item.price * item.quantity).toFixed(2)}</strong>
-                  </div>
-                </div>
-              ))}
+          {/* Order Summary */}
+          <div className="order-summary">
+            <h2>Order Summary</h2>
+            
+            <div className="summary-row">
+              <span>Subtotal</span>
+              <span>${subtotal.toFixed(2)}</span>
             </div>
-
-            {/* Order Summary Section */}
-            <div className="cart-summary">
-              <h3>Order Summary</h3>
-              <div className="summary-row">
-                <span>Subtotal</span>
-                <span>${subtotal.toFixed(2)}</span>
-              </div>
-              {discountApplied && (
-                <div className="summary-row discount">
-                  <span>Discount (-20%)</span>
-                  <span className="discount-amount">-${discountAmount.toFixed(2)}</span>
-                </div>
-              )}
-              <div className="summary-row">
-                <span>Delivery Fee</span>
-                <span>${deliveryFee.toFixed(2)}</span>
-              </div>
-              <div className="summary-row total">
-                <span>Total</span>
-                <span>${total.toFixed(2)}</span>
-              </div>
-
-              {/* Promo Code Input */}
-              <div className="promo-section">
-                <div className="promo-input-group">
-                  <input
-                    type="text"
-                    placeholder="Add promo code"
-                    value={promoCode}
-                    onChange={(e) => setPromoCode(e.target.value)}
-                    className="promo-input"
-                  />
-                  <button onClick={handleApplyPromo} className="apply-btn">Apply</button>
-                </div>
-                {discountApplied && (
-                  <div className="promo-success">
-                    ✓ Promo code applied! 20% discount
-                  </div>
-                )}
-              </div>
-
-              <button 
-                className="checkout-btn" 
-                onClick={handleCheckout}
-                disabled={isProcessing}
-              >
-                {isProcessing ? 'Processing...' : 'Proceed to Checkout'}
-              </button>
+            
+            <div className="summary-row">
+              <span>Shipping</span>
+              <span>{shipping === 0 ? 'FREE' : `$${shipping.toFixed(2)}`}</span>
             </div>
+            
+            <div className="summary-row">
+              <span>Tax (8%)</span>
+              <span>${tax.toFixed(2)}</span>
+            </div>
+            
+            <div className="summary-total">
+              <span>Total</span>
+              <span>${total.toFixed(2)}</span>
+            </div>
+            
+            <button 
+              className="checkout-btn"
+              onClick={handleBuyNow}
+            >
+              Proceed to Checkout
+            </button>
+            
+            <button 
+              className="clear-cart-btn"
+              onClick={handleClearCart}
+            >
+              Clear Cart
+            </button>
           </div>
         </div>
       </div>
 
-      <Footer />
-
-      <style jsx>{`
-        .cart-page {
-          padding: 40px 0 60px;
-          background: #ffffff;
-        }
-
-        .container {
-          max-width: 1280px;
-          margin: 0 auto;
-          padding: 0 24px;
-        }
-
-        .breadcrumb {
-          margin-bottom: 24px;
-          font-size: 14px;
-          color: #666;
-        }
-
-        .breadcrumb a {
-          color: #666;
-          text-decoration: none;
-        }
-
-        .breadcrumb a:hover {
-          color: #000;
-        }
-
-        .breadcrumb span {
-          margin: 0 8px;
-        }
-
-        h1 {
-          font-size: 32px;
-          font-weight: 700;
-          margin-bottom: 32px;
-          letter-spacing: -0.5px;
-        }
-
-        .cart-content {
-          display: grid;
-          grid-template-columns: 1fr 380px;
-          gap: 40px;
-        }
-
-        /* Cart Items */
-        .cart-items {
-          display: flex;
-          flex-direction: column;
-          gap: 20px;
-        }
-
-        .cart-item {
-          display: flex;
-          gap: 20px;
-          padding: 20px;
-          background: #fff;
-          border: 1px solid #e8e8ec;
-          border-radius: 20px;
-          transition: all 0.2s ease;
-        }
-
-        .cart-item:hover {
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-        }
-
-        .item-image {
-          width: 120px;
-          height: 120px;
-          background: #f5f5f7;
-          border-radius: 16px;
-          overflow: hidden;
-          flex-shrink: 0;
-        }
-
-        .item-image img {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-        }
-
-        .item-details {
-          flex: 1;
-        }
-
-        .item-details h3 {
-          font-size: 18px;
-          font-weight: 600;
-          margin-bottom: 8px;
-        }
-
-        .item-attributes {
-          display: flex;
-          gap: 16px;
-          font-size: 14px;
-          color: #666;
-          margin-bottom: 8px;
-        }
-
-        .item-price {
-          font-size: 18px;
-          font-weight: 700;
-          color: #000;
-          margin-bottom: 12px;
-        }
-
-        .item-actions {
-          display: flex;
-          align-items: center;
-          gap: 16px;
-          flex-wrap: wrap;
-        }
-
-        .quantity-controls {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          background: #f5f5f7;
-          border-radius: 40px;
-          padding: 4px;
-        }
-
-        .quantity-controls button {
-          width: 32px;
-          height: 32px;
-          border: none;
-          background: transparent;
-          font-size: 18px;
-          font-weight: 600;
-          cursor: pointer;
-          border-radius: 50%;
-          transition: background 0.2s;
-        }
-
-        .quantity-controls button:hover {
-          background: #e8e8ec;
-        }
-
-        .quantity-controls span {
-          min-width: 32px;
-          text-align: center;
-          font-weight: 500;
-        }
-
-        .remove-btn {
-          background: none;
-          border: none;
-          color: #e74c3c;
-          font-size: 14px;
-          cursor: pointer;
-          padding: 6px 12px;
-          border-radius: 20px;
-          transition: all 0.2s;
-        }
-
-        .remove-btn:hover {
-          background: #fee;
-          color: #c0392b;
-        }
-
-        .item-total {
-          text-align: right;
-          font-size: 18px;
-          font-weight: 700;
-          min-width: 80px;
-        }
-
-        /* Order Summary */
-        .cart-summary {
-          background: #fafafc;
-          border-radius: 20px;
-          padding: 24px;
-          border: 1px solid #e8e8ec;
-          position: sticky;
-          top: 100px;
-          height: fit-content;
-        }
-
-        .cart-summary h3 {
-          font-size: 20px;
-          font-weight: 700;
-          margin-bottom: 20px;
-        }
-
-        .summary-row {
-          display: flex;
-          justify-content: space-between;
-          padding: 12px 0;
-          border-bottom: 1px solid #e8e8ec;
-          font-size: 15px;
-        }
-
-        .summary-row.discount {
-          color: #27ae60;
-          border-bottom: 1px solid #e8e8ec;
-        }
-
-        .discount-amount {
-          font-weight: 600;
-        }
-
-        .summary-row.total {
-          border-top: 2px solid #e8e8ec;
-          border-bottom: none;
-          font-size: 18px;
-          font-weight: 800;
-          padding-top: 16px;
-          margin-top: 4px;
-        }
-
-        .promo-section {
-          margin: 20px 0;
-        }
-
-        .promo-input-group {
-          display: flex;
-          gap: 12px;
-        }
-
-        .promo-input {
-          flex: 1;
-          padding: 12px 16px;
-          border: 1px solid #e0e0e6;
-          border-radius: 40px;
-          font-size: 14px;
-          font-family: 'Inter', sans-serif;
-          outline: none;
-          transition: border 0.2s;
-        }
-
-        .promo-input:focus {
-          border-color: #000;
-        }
-
-        .apply-btn {
-          padding: 0 24px;
-          background: #1a1a2e;
-          color: white;
-          border: none;
-          border-radius: 40px;
-          font-weight: 600;
-          font-size: 14px;
-          cursor: pointer;
-          transition: background 0.2s;
-        }
-
-        .apply-btn:hover {
-          background: #000;
-        }
-
-        .promo-success {
-          margin-top: 12px;
-          font-size: 13px;
-          color: #27ae60;
-          background: #e8f8ef;
-          padding: 8px 12px;
-          border-radius: 30px;
-          text-align: center;
-        }
-
-        .checkout-btn {
-          width: 100%;
-          padding: 14px;
-          background: #1a1a2e;
-          color: white;
-          border: none;
-          border-radius: 40px;
-          font-size: 16px;
-          font-weight: 600;
-          cursor: pointer;
-          margin-top: 16px;
-          transition: all 0.2s;
-        }
-
-        .checkout-btn:hover:not(:disabled) {
-          background: #000;
-          transform: translateY(-1px);
-        }
-
-        .checkout-btn:disabled {
-          opacity: 0.6;
-          cursor: not-allowed;
-        }
-
-        /* Empty Cart */
-        .empty-cart {
-          text-align: center;
-          padding: 80px 20px;
-          background: #fefefe;
-          border-radius: 24px;
-        }
-
-        .empty-cart h2 {
-          font-size: 28px;
-          font-weight: 600;
-          margin-bottom: 12px;
-        }
-
-        .empty-cart p {
-          color: #666;
-          margin-bottom: 24px;
-        }
-
-        .btn-primary {
-          display: inline-block;
-          padding: 12px 32px;
-          background: #1a1a2e;
-          color: white;
-          text-decoration: none;
-          border-radius: 40px;
-          font-weight: 600;
-          transition: background 0.2s;
-        }
-
-        .btn-primary:hover {
-          background: #000;
-        }
-
-        /* Responsive */
-        @media (max-width: 900px) {
-          .cart-content {
-            grid-template-columns: 1fr;
-          }
-
-          .cart-summary {
-            position: static;
-          }
-        }
-
-        @media (max-width: 600px) {
-          .cart-item {
-            flex-direction: column;
-            text-align: center;
-          }
-
-          .item-image {
-            margin: 0 auto;
-          }
-
-          .item-total {
-            text-align: center;
-          }
-
-          .item-actions {
-            justify-content: center;
-          }
-
-          .item-attributes {
-            justify-content: center;
-          }
-
-          h1 {
-            font-size: 24px;
-          }
-        }
-      `}</style>
-    </>
+      {/* Order Modal */}
+      {showOrderModal && (
+        <div className="modal-overlay" onClick={() => setShowOrderModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '600px' }}>
+            <div className="modal-header">
+              <h2>Complete Your Order</h2>
+              <button className="modal-close" onClick={() => setShowOrderModal(false)}>&times;</button>
+            </div>
+            
+            {loadingAddresses ? (
+              <div style={{ textAlign: 'center', padding: '20px' }}>
+                <div className="loading-spinner" />
+                <p>Loading saved addresses...</p>
+              </div>
+            ) : (
+              <>
+                {savedAddresses.length > 0 && (
+                  <div className="saved-addresses">
+                    <h4>Select Saved Address</h4>
+                    <div className="address-list">
+                      {savedAddresses.map(addr => (
+                        <div 
+                          key={addr.id} 
+                          className={`address-card ${selectedAddressId === addr.id ? 'selected' : ''}`}
+                          onClick={() => handleAddressSelect(addr.id)}
+                        >
+                          <div className="address-radio">
+                            <input 
+                              type="radio" 
+                              checked={selectedAddressId === addr.id}
+                              onChange={() => handleAddressSelect(addr.id)}
+                            />
+                          </div>
+                          <div className="address-details">
+                            <p><strong>{addr.fullName}</strong> {addr.isDefault && <span className="default-badge">Default</span>}</p>
+                            <p>{addr.address}</p>
+                            <p>{addr.city}, {addr.state} {addr.zipCode}</p>
+                            <p>📞 {addr.phone} | 📧 {addr.email}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <button 
+                      type="button" 
+                      className="new-address-btn"
+                      onClick={() => {
+                        setSelectedAddressId(null);
+                        setOrderDetails({
+                          fullName: '',
+                          email: '',
+                          address: '',
+                          city: '',
+                          state: '',
+                          zipCode: '',
+                          phone: '',
+                          paymentMethod: 'cod'
+                        });
+                      }}
+                    >
+                      + Use New Address
+                    </button>
+                  </div>
+                )}
+                
+                <form onSubmit={handleOrderSubmit}>
+                  <div className="form-group">
+                    <input 
+                      type="text" 
+                      name="fullName" 
+                      placeholder="Full Name" 
+                      required 
+                      onChange={handleOrderChange} 
+                      value={orderDetails.fullName} 
+                    />
+                  </div>
+                  
+                  <div className="form-group">
+                    <input 
+                      type="email" 
+                      name="email" 
+                      placeholder="Email Address" 
+                      required 
+                      onChange={handleOrderChange} 
+                      value={orderDetails.email} 
+                    />
+                  </div>
+                  
+                  <div className="form-group">
+                    <input 
+                      type="text" 
+                      name="address" 
+                      placeholder="Street Address" 
+                      required 
+                      onChange={handleOrderChange} 
+                      value={orderDetails.address} 
+                    />
+                  </div>
+                  
+                  <div className="form-row">
+                    <div className="form-group">
+                      <input 
+                        type="text" 
+                        name="city" 
+                        placeholder="City" 
+                        required 
+                        onChange={handleOrderChange} 
+                        value={orderDetails.city} 
+                      />
+                    </div>
+                    <div className="form-group">
+                      <input 
+                        type="text" 
+                        name="state" 
+                        placeholder="State" 
+                        required 
+                        onChange={handleOrderChange} 
+                        value={orderDetails.state} 
+                      />
+                    </div>
+                    <div className="form-group">
+                      <input 
+                        type="text" 
+                        name="zipCode" 
+                        placeholder="Zip Code" 
+                        required 
+                        onChange={handleOrderChange} 
+                        value={orderDetails.zipCode} 
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="form-group">
+                    <input 
+                      type="tel" 
+                      name="phone" 
+                      placeholder="Phone Number" 
+                      required 
+                      onChange={handleOrderChange} 
+                      value={orderDetails.phone} 
+                    />
+                  </div>
+                  
+                  <div className="form-group">
+                    <select 
+                      name="paymentMethod" 
+                      onChange={handleOrderChange} 
+                      value={orderDetails.paymentMethod}
+                    >
+                      <option value="cod">Cash on Delivery</option>
+                      <option value="card">Credit/Debit Card</option>
+                      <option value="upi">UPI</option>
+                      <option value="bank">Bank Transfer</option>
+                    </select>
+                  </div>
+                  
+                  <div className="order-summary-modal">
+                    <h3>Order Summary</h3>
+                    {cartItems.map(item => (
+                      <div key={item.id} className="summary-item">
+                        <span>{item.title || item.name} × {item.quantity}</span>
+                        <span>${(item.price * item.quantity).toFixed(2)}</span>
+                      </div>
+                    ))}
+                    <div className="summary-divider" />
+                    <div className="summary-item total">
+                      <strong>Total</strong>
+                      <strong>${total.toFixed(2)}</strong>
+                    </div>
+                  </div>
+                  
+                  <button 
+                    type="submit" 
+                    className="confirm-order-btn"
+                    disabled={loading}
+                  >
+                    {loading ? 'Placing Order...' : `Place Order ($${total.toFixed(2)})`}
+                  </button>
+                </form>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
   );
 };
 

@@ -130,7 +130,6 @@
 
 
 
-
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 
 // Direct API calls to your PostgreSQL backend
@@ -174,13 +173,17 @@ const getAllCategories = async () => {
 // Admin API functions (require authentication)
 const createProductAdmin = async (productData) => {
   const token = getToken();
-  // Remove rating if it's an object, or convert it properly
+  
+  console.log('🔵 Creating product with data:', productData); // Debug log
+  
+  // Clean the data
   const cleanData = { ...productData };
   if (cleanData.rating && typeof cleanData.rating === 'object') {
-    delete cleanData.rating; // Let the database use default value
+    delete cleanData.rating;
   }
   
-  const response = await fetch(`${API_URL}/admin/products`, {
+  // ✅ FIXED: Use /products instead of /admin/products
+  const response = await fetch(`${API_URL}/products`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -188,18 +191,24 @@ const createProductAdmin = async (productData) => {
     },
     body: JSON.stringify(cleanData)
   });
+  
+  console.log('📤 Response status:', response.status); // Debug log
+  
   return handleResponse(response);
 };
 
 const updateProductAdmin = async (id, productData) => {
   const token = getToken();
-  // Remove rating if it's an object
+  
+  console.log('🟡 Updating product:', id, productData); // Debug log
+  
   const cleanData = { ...productData };
   if (cleanData.rating && typeof cleanData.rating === 'object') {
     delete cleanData.rating;
   }
   
-  const response = await fetch(`${API_URL}/admin/products/${id}`, {
+  // ✅ FIXED: Use /products instead of /admin/products
+  const response = await fetch(`${API_URL}/products/${id}`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
@@ -207,12 +216,15 @@ const updateProductAdmin = async (id, productData) => {
     },
     body: JSON.stringify(cleanData)
   });
+  
   return handleResponse(response);
 };
 
 const deleteProductAdmin = async (id) => {
   const token = getToken();
-  const response = await fetch(`${API_URL}/admin/products/${id}`, {
+  
+  // ✅ FIXED: Use /products instead of /admin/products
+  const response = await fetch(`${API_URL}/products/${id}`, {
     method: 'DELETE',
     headers: {
       'Authorization': `Bearer ${token}`
@@ -275,9 +287,12 @@ export const createProduct = createAsyncThunk(
   'products/createProduct',
   async (productData, { rejectWithValue }) => {
     try {
+      console.log('📦 createProduct thunk called with:', productData);
       const response = await createProductAdmin(productData);
-      return response;
+      console.log('✅ Product created successfully:', response);
+      return response.product || response;
     } catch (error) {
+      console.error('❌ createProduct thunk error:', error);
       return rejectWithValue(error.message);
     }
   }
@@ -288,7 +303,7 @@ export const updateProduct = createAsyncThunk(
   async ({ id, productData }, { rejectWithValue }) => {
     try {
       const response = await updateProductAdmin(id, productData);
-      return response;
+      return response.product || response;
     } catch (error) {
       return rejectWithValue(error.message);
     }
@@ -354,10 +369,10 @@ const productSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-     .addCase(fetchProductById.fulfilled, (state, action) => {
-  state.loading = false;
-  state.selectedProduct = action.payload.product;
-})
+      .addCase(fetchProductById.fulfilled, (state, action) => {
+        state.loading = false;
+        state.selectedProduct = action.payload.product;
+      })
       .addCase(fetchProductById.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
@@ -399,10 +414,12 @@ const productSlice = createSlice({
       .addCase(createProduct.fulfilled, (state, action) => {
         state.loading = false;
         state.products.push(action.payload);
+        console.log('✅ Product added to state:', action.payload);
       })
       .addCase(createProduct.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
+        console.error('❌ Product creation rejected:', action.payload);
       })
       
       // Update product (Admin)
